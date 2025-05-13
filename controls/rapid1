@@ -1,0 +1,121 @@
+MODULE Support
+    CONST robtarget myRobtarget := [[100,200,300],[1,0,0,0],[0,0,0,0],[9E9,9E9,9E9,9E9,9E9,9E9]];
+    VAR socketdev server_socket;
+    VAR socketdev client_socket;
+    VAR string data;
+    VAR string x;
+    VAR robtarget currentPos;
+    CONST robtarget TRAILPOINT:=[[362.52,-2126.42,944.92],[0.255377,-0.700485,0.656539,0.114279],[-1,0,-2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+        
+PROC main()
+ VAR robtarget pTarget;
+ VAR robtarget y;
+
+        ! Initialize server socket
+        SocketCreate server_socket;
+        SocketBind server_socket, "127.0.0.1", 5001;
+        SocketListen server_socket;
+
+        WHILE TRUE DO
+             ! Accept client connection
+                SocketAccept server_socket, client_socket, \Time:=WAIT_MAX;
+
+                ! Receive data from client
+                SocketReceive client_socket \Str:=data;
+                x:=data;
+		currentPos := GetRobtarget();
+                ! Process data
+                data := TargetToString(myRobtarget);
+                TPWrite data;
+                ptarget := StringToTarget(x);
+               
+
+                ! Close client socket
+                SocketClose client_socket;
+                Movej pTarget,v400,z15,tool0;
+            
+        ENDWHILE
+            
+               
+    
+            
+        
+ENDPROC
+
+
+    FUNC string TargetToString(robtarget target)
+        VAR string tmpString;
+        ! Pos data
+        tmpString := NumToStr(target.trans.x, 0);
+        AddToString tmpString, target.trans.y;
+        AddToString tmpString, target.trans.z;
+
+        ! Orient data
+        AddToString tmpString, target.rot.q1;
+        AddToString tmpString, target.rot.q2;
+        AddToString tmpString, target.rot.q3;
+        AddToString tmpString, target.rot.q4;
+
+        ! Conf data
+        AddToString tmpString, target.robconf.cf1;
+        AddToString tmpString, target.robconf.cf4;
+        AddToString tmpString, target.robconf.cfx;
+
+        RETURN tmpString;
+    ENDFUNC
+
+    PROC AddToString(INOUT string inString, num value)
+        inString := inString + ";" + NumToStr(value, 0);
+    ENDPROC
+
+    FUNC robtarget StringToTarget(string value)
+        VAR robtarget tmpTarget;
+        VAR bool bResult;
+
+        ! Declare split positions
+        VAR num posX;
+        VAR num posY;
+        VAR num posZ;
+        VAR num posQ1;
+        VAR num posQ2;
+        VAR num posQ3;
+        VAR num posQ4;
+        VAR num posCf1;
+        VAR num posCf4;
+        VAR num poscf6;
+        VAR num posCfx;
+
+        ! Find split positions in string
+        posX := StrFind(value, 1, ";");
+        posY := StrFind(value, posX+1, ";");
+        posZ := StrFind(value, posY+1, ";");
+        posQ1 := StrFind(value, posZ+1, ";");
+        posQ2 := StrFind(value, posQ1+1, ";");
+        posQ3 := StrFind(value, posQ2+1, ";");
+        posQ4 := StrFind(value, posQ3+1, ";");
+        posCf1 := StrFind(value, posQ4+1, ";");
+        posCf4 := StrFind(value, posCf1+1, ";");
+        posCf6 := StrFind(value, posCf4+1, ";");
+        posCfx := StrFind(value, posCf6+1, ";");
+        
+        ! Read all strings
+        bResult := StrToVal(StrPart(value, 1, posX-1), tmpTarget.trans.x);
+        bResult := StrToVal(StrPart(value, posX+1, posY-posX-1), tmpTarget.trans.y);
+        bResult := StrToVal(StrPart(value, posY+1, posZ-posY-1), tmpTarget.trans.z);
+
+        ! Orient data
+        bResult := StrToVal(StrPart(value, posZ+1, posQ1-posZ-1), tmpTarget.rot.q1);
+        bResult := StrToVal(StrPart(value, posQ1+1, posQ2-posQ1-1), tmpTarget.rot.q2);
+        bResult := StrToVal(StrPart(value, posQ2+1, posQ3-posQ2-1), tmpTarget.rot.q3);
+        bResult := StrToVal(StrPart(value, posQ3+1, posQ4-posQ3-1), tmpTarget.rot.q4);
+
+        ! Conf data
+        bResult := StrToVal(StrPart(value, posQ4+1, posCf1-posQ4-1), tmpTarget.robconf.cf1);
+         bResult := StrToVal(StrPart(value, posCf1+1, posCf4-posCf1-1), tmpTarget.robconf.cf4);
+          bResult := StrToVal(StrPart(value, posCf4+1, posCf6-posCf4-1), tmpTarget.robconf.cf4);
+       bResult := StrToVal(StrPart(value, posCf6+1, posCfx-posCf6-1), tmpTarget.robconf.cf4);
+   
+
+        RETURN tmpTarget;
+    ENDFUNC
+ENDMODULE
