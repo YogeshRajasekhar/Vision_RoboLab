@@ -1,0 +1,18 @@
+Sun May 11 12:01:25 2025
+ERROR: Python exception raised
+
+Sun May 11 12:01:57 2025
+ERROR: Python exception raised
+
+Sun May 11 12:12:41 2025
+WARNING: Nan, Inf or huge value in QACC at DOF 4. The simulation is unstable. Time = 2.0800.
+
+Sun May 11 22:31:28 2025
+WARNING: Nan, Inf or huge value in QACC at DOF 4. The simulation is unstable. Time = 2.0800.
+
+Mon May 12 10:25:41 2025
+WARNING: Nan, Inf or huge value in QACC at DOF 1. The simulation is unstable. Time = 7.2000.
+
+Mon May 12 10:26:03 2025
+WARNING: Nan, Inf or huge value in QACC at DOF 1. The simulation is unstable. Time = 7.2000.
+
